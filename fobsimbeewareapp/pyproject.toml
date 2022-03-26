@@ -1,0 +1,52 @@
+[tool.briefcase]
+project_name = "FobSim BeeWare App"
+bundle = "com.example"
+version = "0.0.1"
+url = "https://github.com/akosfenyvesi/fobsim-beeware"
+license = "BSD license"
+author = 'Akos Fenyvesi'
+author_email = "akos@example.com"
+
+[tool.briefcase.app.fobsimbeewareapp]
+formal_name = "FobSim BeeWare App"
+description = "BeeWare app for the FobSim"
+icon = "src/fobsimbeewareapp/resources/fobsimbeewareapp"
+sources = ['src/fobsimbeewareapp']
+requires = [
+]
+
+
+[tool.briefcase.app.fobsimbeewareapp.macOS]
+requires = [
+    'toga-cocoa>=0.3.0.dev32',
+    'std-nslog==1.0.0'
+]
+
+[tool.briefcase.app.fobsimbeewareapp.linux]
+requires = [
+    'toga-gtk>=0.3.0.dev32',
+]
+system_requires = [
+    'libgirepository1.0-dev',
+    'libcairo2-dev',
+    'libpango1.0-dev',
+    'libwebkitgtk-3.0-0',
+    'gir1.2-webkit-3.0',
+]
+
+[tool.briefcase.app.fobsimbeewareapp.windows]
+requires = [
+    'toga-winforms>=0.3.0.dev32',
+]
+
+# Mobile deployments
+[tool.briefcase.app.fobsimbeewareapp.iOS]
+requires = [
+    'toga-iOS>=0.3.0.dev32',
+    'std-nslog==1.0.0'
+]
+
+[tool.briefcase.app.fobsimbeewareapp.android]
+requires = [
+    'toga-android>=0.3.0.dev32'
+]
