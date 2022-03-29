@@ -1,7 +1,7 @@
 {
-  "NumOfFogNodes": 5,
-  "num_of_users_per_fog_node": 5,
-  "NumOfTaskPerUser": 1,
+  "NumOfFogNodes": 4,
+  "num_of_users_per_fog_node": 4,
+  "NumOfTaskPerUser": 2,
   "NumOfMiners": 5,
   "number_of_each_miner_neighbours": 2,
   "numOfTXperBlock": 5,
@@ -15,6 +15,6 @@
   "Gossip_Activated": false,
   "Automatic_PoA_miners_authorization?": true,
   "Parallel_PoW_mining?": false,
-  "Asymmetric_key_length": 512,
+  "Asymmetric_key_length": 1024,
   "Num_of_DPoS_delegates": 3
 }
