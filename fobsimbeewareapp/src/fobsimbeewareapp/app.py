@@ -5,6 +5,32 @@ import json
 import toga
 from toga.style import Pack
 from toga.style.pack import COLUMN, ROW
+import sys
+
+sys.path.append('D:/Szakdoga/fobsim-beeware/fobsimbeewareapp/src/fobsimbeewareapp/simulator')
+# from fobsimbeewareapp.src.fobsimbeewareapp.simulator import main_orig
+# import output
+import mempool
+import neworig
+import main
+import end_user
+import blockchain
+import cloud
+import encryption_module
+import end_user
+import Fog
+import mempool
+import miner
+import modification
+import new_consensus_module
+import output
+import PoET_server
+import storage_cost_analysis
+
+
+
+
+# import main_orig
 
 
 # from functools import partial
@@ -15,8 +41,18 @@ class FobSimApp(toga.App):
     def startup(self):
         # TODO: kiszervezni metodusba? Szepiteni
         with open("../Sim_parameters.json") as f:
+            global sim_parameters
             sim_parameters = json.load(f)
 
+        self.main_box = toga.Box(
+            style=Pack(direction=COLUMN))
+
+        self.main_window = toga.MainWindow(title=self.formal_name)
+        self.main_window.content = self.main_box
+
+        self.initalizeFirstWindow(widget=None)
+
+    def initalizeFirstWindow(self, widget):
         num_of_fog_nodes_label = toga.Label(
             'Number of fog nodes: ',
             style=Pack(padding=(0, 5))
@@ -117,8 +153,8 @@ class FobSimApp(toga.App):
             'Poet block time: ',
             style=Pack(padding=(0, 5)))
         self.poet_block_time_input = toga.NumberInput(min_value=1, max_value=10_000,
-                                                        default=sim_parameters[
-                                                            "poet_block_time"])
+                                                      default=sim_parameters[
+                                                          "poet_block_time"])
         poet_block_time_box = toga.Box(
             style=Pack(direction=ROW, padding=5),
             children=[
@@ -241,8 +277,8 @@ class FobSimApp(toga.App):
             'Asymmetric key length: ',
             style=Pack(padding=(0, 5)))
         self.asymmetric_key_length_input = toga.NumberInput(step=256, min_value=256, max_value=2_048,
-                                                              default=sim_parameters[
-                                                                  "Asymmetric_key_length"])
+                                                            default=sim_parameters[
+                                                                "Asymmetric_key_length"])
         asymmetric_key_length_box = toga.Box(
             style=Pack(direction=ROW, padding=5),
             children=[
@@ -311,7 +347,9 @@ class FobSimApp(toga.App):
             items=[
                 'Proof of Work: PoW',
                 'Proof of Stake: PoS',
-                'Proof of Authority: PoA'
+                'Proof of Authority: PoA',
+                'Proof of Elapsed Time: PoET',
+                'Delegated Proof of Stake: DPoS'
             ],
             on_select=self.refresh_widgets
         )
@@ -339,9 +377,6 @@ class FobSimApp(toga.App):
             on_press=self.modify_sim_parameters_json,
             style=Pack(padding=5)
         )
-
-        self.main_box = toga.Box(
-            style=Pack(direction=COLUMN))
 
         left_container = toga.Box(
             style=Pack(direction=COLUMN),
@@ -386,25 +421,90 @@ class FobSimApp(toga.App):
         )
 
         self.main_box.add(self.split)
-
-        self.main_window = toga.MainWindow(title=self.formal_name)
-        self.main_window.content = self.main_box
         self.main_window.show()
 
     def confirm_window(self):
-        fog_nodes_label = toga.Label(f'Number of fog nodes: {int(self.num_of_fog_nodes_input.value)}', style=Pack(padding=(0, 5)))
-        fog_users_label = toga.Label(f'Number of users per fog node: {int(self.num_of_users_per_fog_node_input.value)}', style=Pack(padding=(0, 5)))
-        back_button = toga.Button('Back', on_press=self.startup)
-        start_simulation_button = toga.Button('Start', on_press=self.start_simulation)
+        num_of_fog_nodes_label = toga.Label(f'Number of fog nodes: {int(self.num_of_fog_nodes_input.value)}',
+                                            style=Pack(padding=5))
+        num_of_users_per_fog_node_label = toga.Label(
+            f'Number of users per fog node: {int(self.num_of_users_per_fog_node_input.value)}',
+            style=Pack(padding=5))
+        num_of_tasks_per_user_label = toga.Label(
+            f'Number of tasks per user: {int(self.num_of_tasks_per_user_input.value)}', style=Pack(padding=5))
+        num_of_miners_label = toga.Label(f'Number of minders: {int(self.num_of_miners_input.value)}',
+                                         style=Pack(padding=5))
+        number_of_each_miner_neighbours_label = toga.Label(
+            f'Number of each miner neighbours: {int(self.number_of_each_miner_neighbours_input.value)}',
+            style=Pack(padding=5))
+        number_of_tx_per_block_label = toga.Label(
+            f'Number of transactions per block: {int(self.number_of_tx_per_block_input.value)}',
+            style=Pack(padding=5))
+        puzzle_difficulty_label = toga.Label(f'Puzzle difficulty: {int(self.puzzle_difficulty_input.value)}',
+                                             style=Pack(padding=5))
+        poet_block_time_label = toga.Label(f'PoET block time: {int(self.poet_block_time_input.value)}',
+                                           style=Pack(padding=5))
+        max_enduser_payment_label = toga.Label(f'Max enduser payment: {int(self.max_enduser_payment_input.value)}',
+                                           style=Pack(padding=5))
+        miners_initial_wallet_value_label = toga.Label(f'Miners initial wallet value: {int(self.miners_initial_wallet_value_input.value)}',
+                                           style=Pack(padding=5))
+        mining_award_label = toga.Label(f'Mining award: {int(self.mining_award_input.value)}',
+                                           style=Pack(padding=5))
+        delay_between_fog_nodes_label = toga.Label(f'Delay between fog nodes: {int(self.delay_between_fog_nodes_input.value)}',
+                                           style=Pack(padding=5))
+        delay_between_end_users_label = toga.Label(
+            f'Delay between end users: {int(self.delay_between_end_users_input.value)}',
+            style=Pack(padding=5))
+
+        gossip_activated_label = toga.Label(
+            f'Gossip activated: {"Yes" if self.gossip_activated_switch.is_on else "No"}',
+            style=Pack(padding=5))
+
+        automatic_poa_miners_autherization_label = toga.Label(
+            f'Automatic PoA miners authorization?: {"Yes" if self.automatic_poa_miners_autherization_switch.is_on else "No"}',
+            style=Pack(padding=5))
+
+        parallel_pow_mining_label = toga.Label(
+            f'Parallel PoW mining?: {"Yes" if self.parallel_pow_mining_switch.is_on else "No"}',
+            style=Pack(padding=5))
+
+        asymmetric_key_length_label = toga.Label(
+            f'Asymetric key length: {int(self.asymmetric_key_length_input.value)}',
+            style=Pack(padding=5))
+
+        num_of_dpos_delegates_label = toga.Label(
+            f'Number of DPoS delegates: {int(self.num_of_dpos_delegates_input.value)}',
+            style=Pack(padding=5))
+
+
+        back_button = toga.Button('Back', on_press=self.on_back)
+        start_simulation_button = toga.Button('Start', on_press=self.start_simulation, style=Pack(padding=5))
         self.main_box.remove(self.split)
         self.confirm_box = toga.Box(
-            style=Pack(direction=COLUMN))
-        self.confirm_box.add(fog_nodes_label)
-        self.confirm_box.add(fog_users_label)
-        self.confirm_box.add(back_button)
+            style=Pack(direction=COLUMN, padding=5),
+            children=[
+                num_of_fog_nodes_label,
+                num_of_users_per_fog_node_label,
+                num_of_tasks_per_user_label,
+                num_of_miners_label,
+                number_of_each_miner_neighbours_label,
+                number_of_tx_per_block_label,
+                puzzle_difficulty_label,
+                poet_block_time_label,
+                max_enduser_payment_label,
+                miners_initial_wallet_value_label,
+                mining_award_label,
+                delay_between_fog_nodes_label,
+                delay_between_end_users_label,
+                gossip_activated_label,
+                automatic_poa_miners_autherization_label,
+                parallel_pow_mining_label,
+                asymmetric_key_length_label,
+                num_of_dpos_delegates_label,
+                back_button
+            ]
+        )
         self.main_box.add(self.confirm_box)
         self.main_window.show()
-
 
     def modify_sim_parameters_json(self, widget):
         with open("../Sim_parameters.json", "w") as f:
@@ -452,6 +552,13 @@ class FobSimApp(toga.App):
     def start_simulation(self):
         print("Simulation started")
 
+    def on_back(self, widget):
+        self.main_box.remove(self.confirm_box)
+        self.initalizeFirstWindow(widget=None)
+
 
 def main():
+    # output.genesis_block_generation()
+    # main_orig.initiate_network()
+    output.main_orig()
     return FobSimApp()
